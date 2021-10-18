@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('./partials/head.ejs') %>
+  <body>
+    <%- include('./partials/nav.ejs') %>
+    <div class="container" id="itemContainer">
+      <ul class="collection with-header">
+        <% if(items.length > 0) { %> <% items.forEach(item=>{ %>
+        <li class="collection-item">
+          <div>
+            <a href="/items/<%=item._id %>"><%=item.name %> <%=item.price %></a>
+            <a href="#!" class="secondary-content">
+              <i class="material-icons" data-id="<%= item._id %>">delete</i>
+              <i
+                class="material-icons modal-trigger"
+                href="#modal1"
+                data-id="<%= item._id %>"
+                >edit</i
+              ></a
+            >
+          </div>
+        </li>
+        <% }) %> <% }else{ %>
+        <li>There are no items</li>
+        <% } %>
+      </ul>
+    </div>
+    <div id="modal1" class="modal">
+      <div class="modal-content">
+        <h4>Edit Form</h4>
+        <form action="" id="editform">
+          <input type="text" name="name" placeholder="Item Name" />
+          <input type="number" name="price" placeholder="Item Price" />
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn modal-close" type="submit" form="editform">
+          Update
+        </button>
+      </div>
+    </div>
+  </body>
+  <script>
+    var updateID;
+    document.addEventListener("DOMContentLoaded", function () {
+      var elems = document.querySelectorAll(".modal");
+      var instances = M.Modal.init(elems);
+    });
+    const itemContainer = document.getElementById("itemContainer");
+    itemContainer.onclick = (e) => {
+      if (e.target.textContent == "edit") {
+        updateID = e.target.getAttribute("data-id");
+        console.log(updateID);
+      }
+      if (e.target.textContent == "delete") {
+        e.preventDefault();
+        const id = e.target.getAttribute("data-id");
+        console.log(id);
+        const end_point = `/items/${id}`;
+        fetch(end_point, {
+          method: "DELETE",
+        })
+          .then((res) => {
+            return res.json();
+          })
+          .then((data) => {
+            console.log("data", data);
+            window.location.href = data.redirect;
+          })
+          .catch((err) => console.log(err));
+      } else {
+      }
+    };
+    const edit_form = document.getElementById("editform");
+    edit_form.onsubmit = async (e) => {
+      console.log(edit_form);
+      e.preventDefault();
+      let data = new FormData(edit_form);
+      let response = await fetch(`/items/${updateID}`, {
+        method: "PUT",
+        body: new URLSearchParams(data),
+        headers: new Headers({
+          "Content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+        }),
+      });
+      let result = await response.json();
+      edit_form.reset();
+      window.location.reload();
+    };
+  </script>
+</html>
